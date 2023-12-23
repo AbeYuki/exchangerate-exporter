@@ -1,10 +1,24 @@
-# exchangerate-exporter
+DOCKERFILE_PATH = .
 
-ExchageRate-API を利用した円の為替レート exporter  
+IMAGE_NAME = exchangerate-exporter
 
-## これは何
+VERSION = 1.0.0
 
-ExchageRate-API を利用して円の為替レートを取得したものを prometheus 用の exporter に変換したもの
+REGISTRY = abeyuki
+
+PLATFORMS = linux/amd64,linux/arm64,linux/ppc64le,linux/s390x,linux/arm/v7,linux/arm/v8
+
+define RELEASE_NOTES
+## metrics
+
+```
+# HELP usd_jpy_exchange_rate Current exchange rate of USD to JPY
+# TYPE usd_jpy_exchange_rate gauge
+usd_jpy_exchange_rate 142.28
+# HELP eur_jpy_exchange_rate Current exchange rate of EUR to JPY
+# TYPE eur_jpy_exchange_rate gauge
+eur_jpy_exchange_rate 156.73
+```
 
 ## ExchageRate-API を利用
 
@@ -53,7 +67,7 @@ curl http://127.0.0.1:9110/metrics
 ## docker
 
 ```
-docker run -it -d -p 9110:9110 abeyuki/exchangerate-exporter:latest
+docker run -itd -p 9110:9110 abeyuki/exchangerate-exporter:latest
 ```
 
 ## kubernetes
@@ -61,3 +75,21 @@ docker run -it -d -p 9110:9110 abeyuki/exchangerate-exporter:latest
 ```
 kubectl create deployment exchangerate-exporter --image=abeyuki/exchangerate-exporter --port=9110
 ```
+
+endef
+
+export RELEASE_NOTES
+
+
+build:
+	docker build -t $(IMAGE_NAME):latest $(DOCKERFILE_PATH)
+	docker build -t $(IMAGE_NAME):$(VERSION) $(DOCKERFILE_PATH)
+
+push:
+	docker buildx build --no-cache --platform $(PLATFORMS) -t $(REGISTRY)/$(IMAGE_NAME):latest --push $(DOCKERFILE_PATH)
+	docker buildx build --no-cache --platform $(PLATFORMS) -t $(REGISTRY)/$(IMAGE_NAME):$(VERSION) --push $(DOCKERFILE_PATH)
+
+release:
+	git tag $(VERSION)
+	git push origin $(VERSION)
+	echo "$$RELEASE_NOTES" | gh release create $(VERSION) -t "$(VERSION)" -F -
