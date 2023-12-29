@@ -68,8 +68,11 @@ async def metrics():
 
 if __name__ == "__main__":
     import uvicorn
+    log_config = uvicorn.config.LOGGING_CONFIG
+    log_config["formatters"]["access"]["fmt"] = "%(asctime)s - %(levelname)s - %(message)s"
+    log_config["formatters"]["default"]["fmt"] = "%(asctime)s - %(levelname)s - %(message)s"
 
-    host = os.environ.get("HOST_IP", "0.0.0.0")
-    port = int(os.environ.get("PORT", 9110))
+    host = os.environ.get("ER_IP", "0.0.0.0")
+    port = int(os.environ.get("ER_PORT", 9110))
 
-    uvicorn.run("main:app", host=host, port=port, reload=True)
+    uvicorn.run("main:app", host=host, port=port, log_config=log_config)
