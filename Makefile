@@ -2,7 +2,7 @@ DOCKERFILE_PATH = .
 
 IMAGE_NAME = exchangerate-exporter
 
-VERSION = 1.0.0
+VERSION = 1.0.1
 
 REGISTRY = abeyuki
 
@@ -48,15 +48,15 @@ API_KEY=apikey
 ```
 LIMIT_1H=false
 ```
-デフォルトで port は 9110 で動作します。  
+デフォルト port は 9110 で動作します。  
 PORT の環境変数を設定することで port を変更できます。  
 ```
-PORT=9110
+ER_PORT=9110
 ```
-デフォルトで 0.0.0.0 でどこからでもアクセスできます。  
-HOST_IP の環境変数を設定することでアクセス元を指定できます。  
+デフォルトは 0.0.0.0 で全てのアドレスからのアクセスを許可します。
+ER_IP の環境変数を設定することでアクセス元を指定できます。  
 ```
-HOST_IP=192.168.1.1
+ER_IP=192.168.1.1
 ```
 
 ## API エンドポイントのパス
@@ -82,8 +82,8 @@ export RELEASE_NOTES
 
 
 build:
-	docker build -t $(IMAGE_NAME):latest $(DOCKERFILE_PATH)
-	docker build -t $(IMAGE_NAME):$(VERSION) $(DOCKERFILE_PATH)
+	docker build --no-cache -t $(IMAGE_NAME):latest $(DOCKERFILE_PATH)
+	docker build --no-cache -t $(IMAGE_NAME):$(VERSION) $(DOCKERFILE_PATH)
 
 push:
 	docker buildx build --no-cache --platform $(PLATFORMS) -t $(REGISTRY)/$(IMAGE_NAME):latest --push $(DOCKERFILE_PATH)
